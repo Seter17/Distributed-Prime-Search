@@ -85,8 +85,8 @@ namespace PrimeServer
             DataRecieved.Invoke(this, data);
         }
 
-
         public static event EventHandler<Exception> Exception;
+
         private void ExceptionEventHandler(Exception e)
         {
             if (Exception == null) return;
@@ -193,13 +193,21 @@ namespace PrimeServer
         private void Send(Socket handler, String data)
         {
             // Convert the string data to byte data using ASCII encoding.
-            var byteData = Encoding.ASCII.GetBytes(data);
+            var byteData = Encoding.ASCII.GetBytes(String.Format("{0}<EOF>",data));
 
             // Begin sending the data to the remote device.
             handler.BeginSend(byteData, 0, byteData.Length, 0,
                 SendCallback, handler);
         }
 
+        private void ParseMessage(string content, StateObject state)
+        {
+            if (content.Equals("Gimme"))
+            {
+                Send(state.workSocket, generator.GenerateNewValueMessage());
+            }
+            DataRecievedEventHandler(content);
+        }
         #endregion
 
         #region Callbacks
@@ -240,9 +248,8 @@ namespace PrimeServer
 
             if (content.IndexOf("<EOF>", System.StringComparison.Ordinal) > -1)
             {
-                //Everything is done. Store value, send another;
-                DataRecievedEventHandler(content.Substring(0, content.IndexOf("<EOF>", System.StringComparison.Ordinal)));
-                Send(state.workSocket, "This is a test<EOF>");
+                //Everything is done. Now time to parse value;
+                ParseMessage(content.Substring(0, content.IndexOf("<EOF>", System.StringComparison.Ordinal)), state);
             }
             else
             {
