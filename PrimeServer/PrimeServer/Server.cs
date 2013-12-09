@@ -141,9 +141,17 @@ namespace PrimeServer
 
         public void Stop()
         {
-            allDone.Reset();
-            if (mainSocket != null)
-                mainSocket.Close();
+            try
+            {
+                allDone.Reset();
+                if (mainSocket != null)
+                    mainSocket.Close();
+            }
+            catch (Exception ex)
+            {
+                ExceptionEventHandler(ex);
+            }
+
         }
 
         public void LaunchTimer()
@@ -200,16 +208,20 @@ namespace PrimeServer
         {
             try
             {
-                var socket = (Socket)ar.AsyncState;
+                var socket = (Socket) ar.AsyncState;
                 var handler = socket.EndAccept(ar);
 
-                var state = new StateObject { workSocket = handler };
+                var state = new StateObject {workSocket = handler};
                 handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                     ReadCallback, state);
             }
             catch (ObjectDisposedException e)
             {
                 //Occurs when main socket was closed
+            }
+            catch (Exception e)
+            {
+                ExceptionEventHandler(e);
             }
 
             allDone.Set();
@@ -221,23 +233,21 @@ namespace PrimeServer
 
             var bytesRead = state.workSocket.EndReceive(ar);
 
-            if (bytesRead > 0)
+            if (bytesRead <= 0) return;
+            state.sb.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
+
+            var content = state.sb.ToString();
+
+            if (content.IndexOf("<EOF>", System.StringComparison.Ordinal) > -1)
             {
-                state.sb.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
-
-                var content = state.sb.ToString();
-
-                if (content.IndexOf("<EOF>", System.StringComparison.Ordinal) > -1)
-                {
-                    //Everything is done. Store value, send another;
-                    DataRecievedEventHandler(content.Substring(0, content.IndexOf("<EOF>", System.StringComparison.Ordinal)));
-                    Send(state.workSocket, "This is a test<EOF>");
-                }
-                else
-                {
-                    state.workSocket.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
-                        ReadCallback, state);
-                }
+                //Everything is done. Store value, send another;
+                DataRecievedEventHandler(content.Substring(0, content.IndexOf("<EOF>", System.StringComparison.Ordinal)));
+                Send(state.workSocket, "This is a test<EOF>");
+            }
+            else
+            {
+                state.workSocket.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
+                    ReadCallback, state);
             }
         }
 
