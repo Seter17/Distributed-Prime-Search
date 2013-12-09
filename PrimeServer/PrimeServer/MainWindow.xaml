@@ -1,0 +1,21 @@
+﻿<Window x:Class="PrimeServer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="500" Width="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <DockPanel Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="10,10,0,0">
+            <Button x:Name="btnStart" Content="Launch" Width="138" Height="63" Click="Button_Click" />
+            <Button x:Name="btnStop" Content="Stop" Width="138" Height="63" Click="btnStop_Click" DockPanel.Dock="Left"/>
+        </DockPanel>
+        <ScrollViewer Grid.Column="0" HorizontalAlignment="Stretch" Width="307" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Margin="10,166,0,10">
+            <TextBlock x:Name="SystemLog"  TextWrapping="NoWrap" Height="Auto" Width="Auto" />
+        </ScrollViewer>
+        <ScrollViewer Grid.Column="1" HorizontalAlignment="Stretch" Width="307" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Margin="10,166,0,10">
+            <TextBlock x:Name="NumberLog"  TextWrapping="NoWrap" Height="Auto" Width="Auto" />
+        </ScrollViewer>
+    </Grid>
+</Window>
