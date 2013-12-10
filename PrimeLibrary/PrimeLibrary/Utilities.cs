@@ -15,5 +15,13 @@ namespace PrimeServer
             var rested = (s.Available == 0);
             return !(polled & rested);
         }
+
+        public static string EraseEnding(this string s)
+        {
+            var index = s.IndexOf("<EOF>", System.StringComparison.Ordinal);
+            return index != -1
+                ? s.Remove(s.IndexOf("<EOF>", System.StringComparison.Ordinal))
+                : s;
+        }
     }
 }

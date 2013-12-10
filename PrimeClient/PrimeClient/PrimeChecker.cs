@@ -2,12 +2,37 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PrimeClient
 {
     class PrimeChecker
     {
-        //Also compare with Mersen number
+
+        public static void CheckRange(ulong startValue, int range, ref List<ulong> primes)
+        {
+            //test interval [startValue; startValue + range] for prime numbers
+            var result = primes;
+            var tasks = new Task[range + 1];
+            for (var i = 0; i <= range; ++i)
+            {
+                var incremet =  (ulong)i;
+
+                tasks[i] = Task.Factory.StartNew(() =>
+                                      {
+                                          var valueToTest = startValue + incremet;
+                                          if (IsPrime(valueToTest))
+                                              result.Add(valueToTest);
+                                      });
+            }
+
+            Task.WaitAll(tasks, 1000);
+
+            primes = result;
+        }
+
+        //Also we should compare with Mersen number
         public static bool IsPrime(ulong number)
         {
             if (number == 2)
@@ -40,12 +65,9 @@ namespace PrimeClient
         {
             if (b == 1)
                 return a;
-            if (b % 2 == 0)
-            {
-                ulong t = Mul(a, b / 2, m);
-                return (2 * t) % m;
-            }
-            return (Mul(a, b - 1, m) + a) % m;
+            if (b%2 != 0) return (Mul(a, b - 1, m) + a)%m;
+            var t = Mul(a, b / 2, m);
+            return (2 * t) % m;
         }
 
 
@@ -54,12 +76,11 @@ namespace PrimeClient
         {
             if (b == 0)
                 return 1;
-            if (b % 2 == 0)
-            {
-                ulong t = Pows(a, b / 2, m);
-                return Mul(t, t, m) % m;
-            }
-            return (Mul(Pows(a, b - 1, m), a, m)) % m;
+            if (b%2 != 0) 
+                return (Mul(Pows(a, b - 1, m), a, m))%m;
+
+            var t = Pows(a, b / 2, m);
+            return Mul(t, t, m) % m;
         }
     }
 }
