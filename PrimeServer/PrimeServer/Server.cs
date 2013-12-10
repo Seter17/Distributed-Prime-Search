@@ -30,6 +30,7 @@ namespace PrimeServer
         private PrimeGenerator generator;
 
         private System.Timers.Timer timeoutCheckTimer;
+        private System.Timers.Timer timeoutAutoSave;
         private TimeSpan timeout = new TimeSpan(0,0,0, 300);
 
         #endregion
@@ -147,7 +148,7 @@ namespace PrimeServer
                 if (mainSocket != null)
                     mainSocket.Close();
 
-                loader.SavePendingValues(generator.GetPendingValues());
+                loader.SavePendingValues(generator.GetPendingValues(), generator.StartValue, generator.Range);
             }
             catch (Exception ex)
             {

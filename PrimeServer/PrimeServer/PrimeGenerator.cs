@@ -9,11 +9,11 @@ namespace PrimeServer
 {
     public class PrimeGenerator
     {
-        public object lockObj = new object();
+        private object lockObj = new object();
         public PrimeGenerator(BigInteger start, TimeSpan timeout, int range = 10)
         {
-            startValue = start;
-            this.range = range;
+            StartValue = start;
+            this.Range = range;
             this.timeout = timeout;
 
             pendingValues = new Dictionary<Packet, DateTime>();
@@ -23,11 +23,14 @@ namespace PrimeServer
         private Dictionary<Packet, DateTime> pendingValues;
         private Queue<KeyValuePair<BigInteger, int>> priorityValues;
 
-        private BigInteger startValue;
-        private int range;
+        
         private TimeSpan timeout;
 
         private readonly object lockObect = new object();
+
+
+        public BigInteger StartValue { get; private set; }
+        public int Range { get; private set; }
 
         #region Pending Values
 
@@ -98,8 +101,8 @@ namespace PrimeServer
                 }
                 else
                 {
-                    newData = new Packet(this.startValue, this.range);
-                    this.startValue += this.range + 1;
+                    newData = new Packet(this.StartValue, this.Range);
+                    this.StartValue += this.Range + 1;
                 }
                 
                 this.AddPendingValue(newData, DateTime.Now);
