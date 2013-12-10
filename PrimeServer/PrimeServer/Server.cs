@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Windows.Documents;
 using PrimeLibrary;
 
 
@@ -35,7 +36,7 @@ namespace PrimeServer
 
         private Server()
         {
-            loader = new PrimeLoader("","");
+            loader = new PrimeLoader("primes.txt","pendings.xml");
 
             BigInteger start;
             int range;
@@ -145,6 +146,8 @@ namespace PrimeServer
                 allDone.Reset();
                 if (mainSocket != null)
                     mainSocket.Close();
+
+                loader.SavePendingValues(generator.GetPendingValues());
             }
             catch (Exception ex)
             {
@@ -215,6 +218,16 @@ namespace PrimeServer
             if (content.Contains("Gotcha"))
             {
                 Send(state.workSocket, "Thanks!");
+                var data = content.Split(' ');
+
+                if (data.Length > 2 && !String.IsNullOrEmpty(data[2]))
+                {
+                    var list = Array.ConvertAll(data[2].Split(','), BigInteger.Parse).ToList();
+                    loader.SavePrimeData(list);
+                }
+
+                var packetId = Guid.Parse(data[1]);
+                generator.RemoveFromPending(packetId);
             }
 
             DataRecievedEventHandler(content);

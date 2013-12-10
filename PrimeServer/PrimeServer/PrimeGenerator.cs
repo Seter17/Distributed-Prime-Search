@@ -9,6 +9,7 @@ namespace PrimeServer
 {
     public class PrimeGenerator
     {
+        public object lockObj = new object();
         public PrimeGenerator(BigInteger start, TimeSpan timeout, int range = 10)
         {
             startValue = start;
@@ -32,7 +33,10 @@ namespace PrimeServer
 
         public void AddPendingValue(Packet data, DateTime time)
         {
-            pendingValues.Add(data, time);
+            lock (lockObj)
+            {
+                pendingValues.Add(data, time);
+            }
         }
 
         public void AddPendingValue(Guid id, BigInteger start, int range, DateTime time)
@@ -47,8 +51,13 @@ namespace PrimeServer
 
         public void RemoveFromPending(Guid id)
         {
-            var toRemove = pendingValues.First(x => x.Key.Id != id).Key;
-            pendingValues.Remove(toRemove);
+            lock (lockObj)
+            {
+                var toRemove = pendingValues.FirstOrDefault(x => x.Key.Id != id).Key;
+                if (toRemove == null) return;
+                pendingValues.Remove(toRemove);
+            }
+
         }
 
         public void AddPendingValue(Dictionary<Packet, DateTime> values)
@@ -59,6 +68,10 @@ namespace PrimeServer
             }
         }
 
+        public Dictionary<Packet, DateTime> GetPendingValues()
+        {
+            return pendingValues;
+        }
         
         #endregion
 
