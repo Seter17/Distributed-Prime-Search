@@ -32,8 +32,13 @@ namespace PrimeServer
         {
             InitializeComponent();
             Server.Started += (sender, s) => this.WriteToSystemLog(s, MessageType.Notification);
-            Server.Listening += (sender, s) => this.WriteToSystemLog(s, MessageType.Notification);
-            Server.DataRecieved += (sender, s) => this.WriteToSystemLog(String.Format("Recieved Message: {0}",s), MessageType.Notification);
+            //Server.Listening += (sender, s) => this.WriteToSystemLog(s, MessageType.Notification);
+            Server.DataRecieved += (sender, s) =>
+                this.WriteToSystemLog(String.Format("Recieved Message: {0}", s), MessageType.Notification);
+            Server.Sent += (sender, s) =>
+                this.WriteToSystemLog(String.Format("Sent Message: {0}", s), MessageType.Notification);
+            Server.TimeoutCheckBegan += (sender, args) =>
+                this.WriteToGeneratorLog("Checking pending values...", MessageType.Notification);
             Server.Exception += (sender, e) => this.WriteToSystemLog(e.Message, MessageType.Exception);
         }
 
@@ -52,29 +57,46 @@ namespace PrimeServer
         {
             Dispatcher.BeginInvoke(new ThreadStart(() =>
                                                    {
-                                                       Color fontColor;
-
-                                                       switch (type)
-                                                       {
-                                                           case MessageType.Exception:
-                                                               fontColor = Colors.Red;
-                                                               break;
-                                                           case MessageType.Warning:
-                                                               fontColor = Colors.Yellow;
-                                                               break;
-                                                           case MessageType.Notification:
-                                                               fontColor = Colors.Green;
-                                                               break;
-                                                           default:
-                                                               fontColor = Colors.Black;
-                                                               break;
-                                                       }
-
-                                                       var mess = new Run(message) { Foreground = new SolidColorBrush(fontColor) };
+                                                       var mess = MessageFormatting(message, type);
                                                        SystemLog.Inlines.Add(mess);
                                                        SystemLog.Inlines.Add(new LineBreak());
                                                    }));
 
+        }
+
+        private void WriteToGeneratorLog(string message, MessageType type)
+        {
+            Dispatcher.BeginInvoke(new ThreadStart(() =>
+                                                    {
+                                                        var mess = MessageFormatting(message, type);
+                                                        GeneratorLog.Inlines.Add(mess);
+                                                        GeneratorLog.Inlines.Add(new LineBreak());
+                                                    }));
+
+        }
+
+        private static Run MessageFormatting(string message, MessageType type)
+        {
+            Color fontColor;
+
+            switch (type)
+            {
+                case MessageType.Exception:
+                    fontColor = Colors.Red;
+                    break;
+                case MessageType.Warning:
+                    fontColor = Colors.Yellow;
+                    break;
+                case MessageType.Notification:
+                    fontColor = Colors.Green;
+                    break;
+                default:
+                    fontColor = Colors.Black;
+                    break;
+            }
+
+            var mess = new Run(message) { Foreground = new SolidColorBrush(fontColor) };
+            return mess;
         }
     }
 }

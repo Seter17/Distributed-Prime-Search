@@ -15,7 +15,7 @@
             <TextBlock x:Name="SystemLog"  TextWrapping="NoWrap" Height="Auto" Width="Auto" />
         </ScrollViewer>
         <ScrollViewer Grid.Column="1" HorizontalAlignment="Stretch" Width="307" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Margin="10,166,0,10">
-            <TextBlock x:Name="NumberLog"  TextWrapping="NoWrap" Height="Auto" Width="Auto" />
+            <TextBlock x:Name="GeneratorLog"  TextWrapping="NoWrap" Height="Auto" Width="Auto" />
         </ScrollViewer>
     </Grid>
 </Window>

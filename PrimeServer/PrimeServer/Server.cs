@@ -9,22 +9,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using PrimeLibrary;
 
 
 namespace PrimeServer
 {
-    public class StateObject
-    {
-        // Client  socket.
-        public Socket workSocket = null;
-        // Size of receive buffer.
-        public const int BufferSize = 1024;
-        // Receive buffer.
-        public byte[] buffer = new byte[BufferSize];
-        // Received data string.
-        public StringBuilder sb = new StringBuilder();
-    }
-
     class Server
     {
         #region Fields
@@ -40,7 +29,7 @@ namespace PrimeServer
         private PrimeGenerator generator;
 
         private System.Timers.Timer timeoutCheckTimer;
-        private TimeSpan timeout = new TimeSpan(0,0,0,300);
+        private TimeSpan timeout = new TimeSpan(0,0,0, 300);
 
         #endregion
 
@@ -62,7 +51,6 @@ namespace PrimeServer
         #region Events & Handlers
 
         public static event EventHandler<string> Started;
-
         private void StartedEventHandler()
         {
             if (Started == null) return;
@@ -70,7 +58,6 @@ namespace PrimeServer
         }
 
         public static event EventHandler<string> Listening;
-
         private void ListeningEventHandler()
         {
             if (Listening == null) return;
@@ -78,20 +65,33 @@ namespace PrimeServer
         }
 
         public static event EventHandler<string> DataRecieved;
-
         private void DataRecievedEventHandler(string data)
         {
             if (DataRecieved == null) return;
             DataRecieved.Invoke(this, data);
         }
 
-        public static event EventHandler<Exception> Exception;
+        public static event EventHandler<string> Sent;
+        private void SentEventHandler(string s)
+        {
+            if (Sent == null) return;
+            Sent.Invoke(this, s);
+        }
 
+        public static event EventHandler TimeoutCheckBegan;
+        private void TimeoutCheckBeganEventHandler()
+        {
+            if (TimeoutCheckBegan == null) return;
+            TimeoutCheckBegan.Invoke(this, null);
+        }
+
+        public static event EventHandler<Exception> Exception;
         private void ExceptionEventHandler(Exception e)
         {
             if (Exception == null) return;
             Exception.Invoke(this, e);
         }
+
         #endregion
 
         #region Control & Access
@@ -128,8 +128,7 @@ namespace PrimeServer
 
                 this.StartedEventHandler();
 
-                var listeningThread = new Thread(StartListeningCycle);
-                listeningThread.Start();
+                Task.Factory.StartNew(StartListeningCycle);
 
             }
             catch (Exception e)
@@ -154,14 +153,16 @@ namespace PrimeServer
 
         }
 
-        public void LaunchTimer()
+        private void LaunchTimer()
         {
-            timeoutCheckTimer = new System.Timers.Timer {AutoReset = false, Interval = timeout.TotalMilliseconds};
+            timeoutCheckTimer = new System.Timers.Timer {AutoReset = true, Interval = timeout.TotalMilliseconds};
             timeoutCheckTimer.Elapsed += CheckTimeout;
+            timeoutCheckTimer.Start();
         }
 
         private void CheckTimeout(object sender, ElapsedEventArgs elapsedEventArgs)
         {
+            TimeoutCheckBeganEventHandler();
             generator.CheckTimeout();
         }
 
@@ -169,7 +170,7 @@ namespace PrimeServer
         {
             try
             {
-                while (mainSocket.Connected())
+                while (true)
                 {
                     allDone.Reset();
 
@@ -195,17 +196,27 @@ namespace PrimeServer
             // Convert the string data to byte data using ASCII encoding.
             var byteData = Encoding.ASCII.GetBytes(String.Format("{0}<EOF>",data));
 
+            var state = new StateObject { workSocket = handler};
+            state.sb.Append(data);
+
             // Begin sending the data to the remote device.
             handler.BeginSend(byteData, 0, byteData.Length, 0,
-                SendCallback, handler);
+                SendCallback, state);
         }
 
-        private void ParseMessage(string content, StateObject state)
+        private void ParseMessage(StateObject state)
         {
+            var content = state.sb.ToString().EraseEnding();
+
             if (content.Equals("Gimme"))
             {
                 Send(state.workSocket, generator.GenerateNewValueMessage());
             }
+            if (content.Contains("Gotcha"))
+            {
+                Send(state.workSocket, "Thanks!");
+            }
+
             DataRecievedEventHandler(content);
         }
         #endregion
@@ -222,10 +233,6 @@ namespace PrimeServer
                 var state = new StateObject {workSocket = handler};
                 handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                     ReadCallback, state);
-            }
-            catch (ObjectDisposedException e)
-            {
-                //Occurs when main socket was closed
             }
             catch (Exception e)
             {
@@ -249,7 +256,7 @@ namespace PrimeServer
             if (content.IndexOf("<EOF>", System.StringComparison.Ordinal) > -1)
             {
                 //Everything is done. Now time to parse value;
-                ParseMessage(content.Substring(0, content.IndexOf("<EOF>", System.StringComparison.Ordinal)), state);
+                ParseMessage(state);
             }
             else
             {
@@ -262,16 +269,16 @@ namespace PrimeServer
         {
             try
             {
-                // Retrieve the socket from the state object.
-                var handler = (Socket)ar.AsyncState;
+                var state = (StateObject)ar.AsyncState;
 
                 // Complete sending the data to the remote device.
-                var bytesSent = handler.EndSend(ar);
+                state.workSocket.EndSend(ar);
 
-                //Send completed
+                state.workSocket.Shutdown(SocketShutdown.Both);
+                state.workSocket.Close();
 
-                handler.Shutdown(SocketShutdown.Both);
-                handler.Close();
+                //Send complete event
+                SentEventHandler(state.sb.ToString().EraseEnding());
 
             }
             catch (Exception e)

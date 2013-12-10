@@ -54,10 +54,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ClientData.cs" />
+    <Compile Include="Packet.cs" />
     <Compile Include="PrimeGenerator.cs" />
     <Compile Include="PrimeLoader.cs" />
-    <Compile Include="Utilities.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -98,6 +97,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\PrimeLibrary\PrimeLibrary\PrimeLibrary.csproj">
+      <Project>{898e2017-ca68-4579-88da-953e6b4f7a54}</Project>
+      <Name>PrimeLibrary</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

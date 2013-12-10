@@ -3,16 +3,16 @@ using System.Numerics;
 
 namespace PrimeServer
 {
-    public class ClientData
+    public class Packet
     {
-        public ClientData(Guid id, BigInteger startValue, int range  = 10)
+        public Packet(Guid id, BigInteger startValue, int range  = 10)
         {
             Id = id;
             StartValue = startValue;
             Range = range;
         }
 
-        public ClientData(BigInteger startValue, int range) : this(Guid.NewGuid(), startValue, range) { }
+        public Packet(BigInteger startValue, int range) : this(Guid.NewGuid(), startValue, range) { }
 
         public Guid Id
         {

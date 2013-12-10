@@ -14,12 +14,12 @@ namespace PrimeServer
             startValue = start;
             this.range = range;
             this.timeout = timeout;
-            
-            pendingValues = new Dictionary<DateTime, ClientData>();
+
+            pendingValues = new Dictionary<Packet, DateTime>();
             priorityValues = new Queue<KeyValuePair<BigInteger, int>>();
         }
 
-        private Dictionary<DateTime, ClientData> pendingValues;
+        private Dictionary<Packet, DateTime> pendingValues;
         private Queue<KeyValuePair<BigInteger, int>> priorityValues;
 
         private BigInteger startValue;
@@ -30,14 +30,14 @@ namespace PrimeServer
 
         #region Pending Values
 
-        public void AddPendingValue(ClientData data, DateTime time)
+        public void AddPendingValue(Packet data, DateTime time)
         {
-            pendingValues.Add(time, data);
+            pendingValues.Add(data, time);
         }
 
         public void AddPendingValue(Guid id, BigInteger start, int range, DateTime time)
         {
-            AddPendingValue(new ClientData(id, start, range), time);
+            AddPendingValue(new Packet(id, start, range), time);
         }
 
         public void AddPendingValue(BigInteger start, int range)
@@ -47,11 +47,11 @@ namespace PrimeServer
 
         public void RemoveFromPending(Guid id)
         {
-            var toRemove = pendingValues.First(x => x.Value.Id != id).Key;
+            var toRemove = pendingValues.First(x => x.Key.Id != id).Key;
             pendingValues.Remove(toRemove);
         }
 
-        public void AddPendingValue(Dictionary<DateTime, ClientData> values)
+        public void AddPendingValue(Dictionary<Packet, DateTime> values)
         {
             foreach (var pair in values)
             {
@@ -76,16 +76,16 @@ namespace PrimeServer
         {
             lock (lockObect)
             {
-                ClientData newData;
+                Packet newData;
 
                 if (priorityValues.Count > 0)
                 {
                     var pair = priorityValues.Dequeue();
-                    newData = new ClientData(pair.Key,pair.Value);
+                    newData = new Packet(pair.Key,pair.Value);
                 }
                 else
                 {
-                    newData = new ClientData(this.startValue, this.range);
+                    newData = new Packet(this.startValue, this.range);
                     this.startValue += this.range + 1;
                 }
                 
@@ -100,15 +100,15 @@ namespace PrimeServer
             CheckTimeout(DateTime.Now);
         }
 
-        public void CheckTimeout(DateTime deadline)
+        private void CheckTimeout(DateTime deadline)
         {
-            var toPriorityQueue = pendingValues.Where(x => x.Key + timeout <= deadline).ToDictionary(x =>x.Key, x=> x.Value);
+            var toPriorityQueue = pendingValues.Where(x => x.Value + timeout <= deadline).ToDictionary(x =>x.Key, x=> x.Value);
 
             if(toPriorityQueue.Count == 0) return;
 
             foreach (var pair in toPriorityQueue)
             {
-                AddPriorityValue(pair.Value.StartValue, pair.Value.Range);
+                AddPriorityValue(pair.Key.StartValue, pair.Key.Range);
                 pendingValues.Remove(pair.Key);
             }
         }

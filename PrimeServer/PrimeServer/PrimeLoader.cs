@@ -20,14 +20,14 @@ namespace PrimeServer
         public void SavePrimeData(List<BigInteger> data)
         { }
 
-        public void SavePendingValues(Dictionary<DateTime, ClientData> pendingValues)
+        public void SavePendingValues(Dictionary<Packet, DateTime> pendingValues)
         { }
 
-        public Dictionary<DateTime, ClientData> LoadPendingValues(out BigInteger startValue, out int range)
+        public Dictionary<Packet, DateTime> LoadPendingValues(out BigInteger startValue, out int range)
         {
             startValue = BigInteger.Zero;
             range = 10;
-            return new Dictionary<DateTime, ClientData>();
+            return new Dictionary<Packet, DateTime>();
         }
     }
 }
