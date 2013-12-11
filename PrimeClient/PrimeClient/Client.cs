@@ -25,7 +25,8 @@ namespace PrimeClient
 
         private bool firstRequest = true;
 
-        private const int port = 11000;
+        private int port = 11000;
+        private string ip = "127.0.0.1";
 
         private Socket client;
 
@@ -86,6 +87,12 @@ namespace PrimeClient
             }
         }
 
+        public void SetConnectionDetails(string ip, int port)
+        {
+            this.ip = ip;
+            this.port = port;
+        }
+
         #region Connection methods
 
         public void RequestNumbers()
@@ -112,10 +119,7 @@ namespace PrimeClient
 
             try
             {
-                // Establish the remote endpoint for the socket.
-                IPHostEntry ipHostInfo = Dns.Resolve("localhost");
-                IPAddress ipAddress = ipHostInfo.AddressList[0];
-                IPEndPoint remoteEP = new IPEndPoint(ipAddress, port);
+                IPEndPoint remoteEP = new IPEndPoint(IPAddress.Parse(ip), port);
 
                 // Create a TCP/IP socket.
                 client = new Socket(AddressFamily.InterNetwork,
