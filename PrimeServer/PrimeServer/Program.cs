@@ -40,6 +40,7 @@ namespace PrimeServer
 
             Server.Exception += (sender, e) => WriteToSystemLog(e.Message, MessageType.Exception);
 
+            Console.WriteLine("Press ESC for correct exit");
 
             try
             {

@@ -36,22 +36,30 @@ namespace PrimeServer
 
         public void SavePendingValues(Dictionary<Packet, DateTime> pendingValues, BigInteger startValue, int range)
         {
-            var doc = new XElement("Pednings", new XAttribute("range", range), new XAttribute("start", startValue));
-            foreach (var pendingValue in pendingValues)
+            try
             {
-                var pending = new XElement("Pending");
+                var doc = new XElement("Pednings", new XAttribute("range", range), new XAttribute("start", startValue));
+                foreach (var pendingValue in pendingValues)
+                {
+                    var pending = new XElement("Pending");
 
-                var id = new XElement("Id", pendingValue.Key.Id);
-                var start = new XElement("Start", pendingValue.Key.StartValue);
-                var rangeNode = new XElement("Range", pendingValue.Key.Range);
-                var time = new XElement("Time", pendingValue.Value);
+                    var id = new XElement("Id", pendingValue.Key.Id);
+                    var start = new XElement("Start", pendingValue.Key.StartValue);
+                    var rangeNode = new XElement("Range", pendingValue.Key.Range);
+                    var time = new XElement("Time", pendingValue.Value);
 
-                pending.Add(id,start,rangeNode,time);
+                    pending.Add(id, start, rangeNode, time);
 
-                doc.Add(pending);
+                    doc.Add(pending);
+                }
+
+                doc.Save(pendingValuesFilePath);
+            }
+            catch (Exception ex)
+            {
+                var str = ex.Message;
             }
 
-            doc.Save(pendingValuesFilePath);
         }
 
         public Dictionary<Packet, DateTime> LoadPendingValues(out BigInteger startValue, out int range)

@@ -293,7 +293,18 @@ namespace PrimeServer
         {
             var state = (StateObject)ar.AsyncState;
 
-            var bytesRead = state.workSocket.EndReceive(ar);
+            var bytesRead = 0;
+
+            try
+            {
+                bytesRead = state.workSocket.EndReceive(ar);
+            }
+            catch (SocketException ex)
+            {
+                ExceptionEventHandler(ex);
+                bytesRead = 0;
+            }
+           
 
             if (bytesRead <= 0) return;
             state.sb.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
