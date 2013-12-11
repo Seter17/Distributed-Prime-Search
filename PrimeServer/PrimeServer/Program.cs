@@ -24,21 +24,21 @@ namespace PrimeServer
         {
             SetConsoleCtrlHandler(new HandlerRoutine(ConsoleCtrlCheck), true);
 
-            Server.Started += (sender, s) => WriteToSystemLog(s, MessageType.Notification);
+            Server.Started += (sender, s) => WriteToSystemLog(s.data, MessageType.Notification);
             //Server.Listening += (sender, s) => this.WriteToSystemLog(s, MessageType.Notification);
             Server.DataRecieved += (sender, s) =>
                                    {
-                                       if (s.Equals("Gimme")) return; //we do not need this shit
+                                       if (s.data.Equals("Gimme")) return; //we do not need this shit
                                        WriteToSystemLog(String.Format("Recieved Message: {0}", s),
                                            MessageType.Common);
                                    };
             Server.Sent += (sender, s) =>
-                WriteToSystemLog(String.Format("Sent Message: {0}", s), MessageType.Notification);
+                WriteToSystemLog(String.Format("Sent Message: {0}", s.data), MessageType.Notification);
 
             Server.TimeoutCheckBegan += (sender, ar) =>
                 WriteToSystemLog("Checking pending values...", MessageType.Warning);
 
-            Server.Exception += (sender, e) => WriteToSystemLog(e.Message, MessageType.Exception);
+            Server.Exception += (sender, e) => WriteToSystemLog(e.data.Message, MessageType.Exception);
 
             Console.WriteLine("Press ESC for correct exit");
 

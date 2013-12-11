@@ -83,32 +83,36 @@ namespace PrimeServer
 
         #region Events & Handlers
 
-        public static event EventHandler<string> Started;
+        public static event EventHandler<TEventArgs<string>> Started;
         private void StartedEventHandler()
         {
             if (Started == null) return;
-            Started.Invoke(this, "Launch complete");
+            var args = new TEventArgs<string>() {data = "Launch complete"};
+            Started.Invoke(this, args);
         }
 
-        public static event EventHandler<string> Listening;
+        public static event EventHandler<TEventArgs<string>> Listening;
         private void ListeningEventHandler()
         {
             if (Listening == null) return;
-            Listening.Invoke(this, "Waiting for a client");
+            var args = new TEventArgs<string>() { data = "Waiting for a client" };
+            Listening.Invoke(this, args);
         }
 
-        public static event EventHandler<string> DataRecieved;
-        private void DataRecievedEventHandler(string data)
+        public static event EventHandler<TEventArgs<string>> DataRecieved;
+        private void DataRecievedEventHandler(string _data)
         {
             if (DataRecieved == null) return;
-            DataRecieved.Invoke(this, data);
+            var args = new TEventArgs<string>() { data = _data };
+            DataRecieved.Invoke(this, args);
         }
 
-        public static event EventHandler<string> Sent;
+        public static event EventHandler<TEventArgs<string>> Sent;
         private void SentEventHandler(string s)
         {
             if (Sent == null) return;
-            Sent.Invoke(this, s);
+            var args = new TEventArgs<string>() { data = s };
+            Sent.Invoke(this, args);
         }
 
         public static event EventHandler TimeoutCheckBegan;
@@ -118,11 +122,12 @@ namespace PrimeServer
             TimeoutCheckBegan.Invoke(this, null);
         }
 
-        public static event EventHandler<Exception> Exception;
+        public static event EventHandler<TEventArgs<Exception>> Exception;
         private void ExceptionEventHandler(Exception e)
         {
             if (Exception == null) return;
-            Exception.Invoke(this, e);
+            var args = new TEventArgs<Exception>() { data = e };
+            Exception.Invoke(this, args);
         }
 
         #endregion
