@@ -42,32 +42,36 @@ namespace PrimeClient
         }
 
         #region Event & Handlers
-        public static event EventHandler<string> Connected;
+        public static event EventHandler<TEventArgs<string>> Connected;
         private void ConnectedEventHandler()
         {
             if (Connected == null) return;
-            Connected.Invoke(this, "Connection established");
+            var args = new TEventArgs<string>() { data = "Connection established" };
+            Connected.Invoke(this, args);
         }
 
-        public static event EventHandler<string> DataRecieved;
-        private void DataRecievedEventHandler(string data)
+        public static event EventHandler<TEventArgs<string>> DataRecieved;
+        private void DataRecievedEventHandler(string _data)
         {
             if (DataRecieved == null) return;
-            DataRecieved.Invoke(this, data);
+            var args = new TEventArgs<string>() { data = _data };
+            DataRecieved.Invoke(this, args);
         }
 
-        public static event EventHandler<string> Sent;
+        public static event EventHandler<TEventArgs<string>> Sent;
         private void SentEventHandler(string s)
         {
             if (Sent == null) return;
-            Sent.Invoke(this, s);
+            var args = new TEventArgs<string>() { data = s };
+            Sent.Invoke(this, args);
         }
-		
-        public static event EventHandler<Exception> Exception;
+
+        public static event EventHandler<TEventArgs<Exception>> Exception;
         private void ExceptionEventHandler(Exception e)
         {
             if (Exception == null) return;
-            Exception.Invoke(this, e);
+            var args = new TEventArgs<Exception>() { data = e };
+            Exception.Invoke(this, args);
         }
 
 	    #endregion

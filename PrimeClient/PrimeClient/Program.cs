@@ -10,10 +10,10 @@ namespace PrimeClient
     {
         static void Main(string[] args)
         {
-            Client.Connected += (sender, s) => Console.WriteLine(s);
-            Client.Sent += (sender, s) => Console.WriteLine(String.Format("Sent \"{0}\" request",s));
-            Client.DataRecieved += (sender, s) => Console.WriteLine(String.Format("Recieved message: \"{0}\"", s));
-            Client.Exception += (sender, ex) => WriteException(ex.Message);
+            Client.Connected += (sender, s) => Console.WriteLine(s.data);
+            Client.Sent += (sender, s) => Console.WriteLine(String.Format("Sent \"{0}\" request",s.data));
+            Client.DataRecieved += (sender, s) => Console.WriteLine(String.Format("Recieved message: \"{0}\"", s.data));
+            Client.Exception += (sender, ex) => WriteException(ex.data.Message);
 
             try
             {
