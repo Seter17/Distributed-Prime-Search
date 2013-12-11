@@ -1,23 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using PrimeServer;
 
 namespace PrimeClient
 {
     class PrimeChecker
     {
 
-        public static void CheckRange(ulong startValue, int range, ref List<ulong> primes)
+        public static void CheckRange(BigInteger startValue, int range, ref List<BigInteger> primes)
         {
             //test interval [startValue; startValue + range] for prime numbers
             var result = primes;
             var tasks = new Task[range + 1];
             for (var i = 0; i <= range; ++i)
             {
-                var incremet =  (ulong)i;
+                var incremet =  (BigInteger)i;
 
                 tasks[i] = Task.Factory.StartNew(() =>
                                       {
@@ -33,7 +35,7 @@ namespace PrimeClient
         }
 
         //Also we should compare with Mersen number
-        public static bool IsPrime(ulong number)
+        public static bool IsPrime(BigInteger number)
         {
             if (number == 2)
                 return true;
@@ -42,7 +44,7 @@ namespace PrimeClient
 
             for (int i = 0; i < 300; i++)
             {
-                ulong a = ((ulong)random.Next() % (number - 2)) + 2;
+                BigInteger a = ((BigInteger)random.Next() % (number - 2)) + 2;
 
                 if (Gcd(a, number) != 1)
                     return false;
@@ -54,14 +56,14 @@ namespace PrimeClient
             return true;
         }
 
-        private static ulong Gcd(ulong a, ulong b)
+        private static BigInteger Gcd(BigInteger a, BigInteger b)
         {
             if (b == 0)
                 return a;
             return Gcd(b, a % b);
         }
 
-        private static ulong Mul(ulong a, ulong b, ulong m)
+        private static BigInteger Mul(BigInteger a, BigInteger b, BigInteger m)
         {
             if (b == 1)
                 return a;
@@ -71,16 +73,23 @@ namespace PrimeClient
         }
 
 
-        //this shit can be faster use binary represesntaion Luke
-        public static ulong Pows(ulong a, ulong b, ulong m)
+        public static BigInteger Pows(BigInteger a, BigInteger b, BigInteger m)
         {
-            if (b == 0)
-                return 1;
-            if (b%2 != 0) 
-                return (Mul(Pows(a, b - 1, m), a, m))%m;
+            var binaryString = b.ToBinaryString();
 
-            var t = Pows(a, b / 2, m);
-            return Mul(t, t, m) % m;
+            BigInteger factor = a;
+            BigInteger result = 1;
+
+            for (var i = binaryString.Length - 1; i >= 0; i--)
+            {
+                factor = Mul(factor, factor, m);
+                if (binaryString[i].Equals('1'))
+                {
+                    result = Mul(factor, result, m);
+                }
+            }
+
+            return result;
         }
     }
 }

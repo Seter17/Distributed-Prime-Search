@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Numerics;
 using System.Text;
 using System.Threading;
 using PrimeLibrary;
@@ -31,13 +32,13 @@ namespace PrimeClient
         private Socket client;
 
         private Guid id;
-        private List<ulong> primes;
+        private List<BigInteger> primes;
 
 	    #endregion
 
         private Client()
         {
-            primes = new List<ulong>();
+            primes = new List<BigInteger>();
         }
 
         #region Event & Handlers
@@ -197,7 +198,7 @@ namespace PrimeClient
             try
             {
                 id = Guid.Parse(data[0]);
-                var startValue = UInt64.Parse(data[1]);
+                var startValue = BigInteger.Parse(data[1]);
                 var range = Int32.Parse(data[2]);
 
                 PrimeChecker.CheckRange(startValue, range, ref primes);
