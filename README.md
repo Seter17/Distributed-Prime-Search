@@ -9,3 +9,4 @@ KNOWN ISSUES:
 
 Duplicates inside prime files;
 Possible NullReference Exception when close server not correctly
+Tested on local machine. Though, designed to work remotly.
