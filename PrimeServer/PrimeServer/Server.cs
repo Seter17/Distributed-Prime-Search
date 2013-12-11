@@ -30,14 +30,43 @@ namespace PrimeServer
         private PrimeGenerator generator;
 
         private System.Timers.Timer timeoutCheckTimer;
-        private System.Timers.Timer timeoutAutoSave;
+        
         private TimeSpan timeout = new TimeSpan(0,0,0, 300);
+
+        private string primeDataFilePath, pendingValuesFilePath;
+
+        IPAddress ip;
+        private int port;
 
         #endregion
 
         private Server()
         {
-            loader = new PrimeLoader("primes.txt","pendings.xml");
+            primeDataFilePath = "primes.txt";
+            pendingValuesFilePath = "pendings.xml";
+        }
+
+        /// <summary>
+        /// Set up server configuration. You need to relaunch server after this method invoked to apply options
+        /// </summary>
+        public void Configurate(string pendingFilePath, string primeFilePath, int port = 11000, string ip = "any")
+        {
+            if (String.IsNullOrEmpty(ip) || ip.Equals("any"))
+                this.ip = IPAddress.Any;
+            else
+            {
+                this.ip = IPAddress.Parse(ip);    
+            }
+            
+            this.port = port;
+            this.pendingValuesFilePath = pendingFilePath;
+            this.primeDataFilePath = primeFilePath;
+        }
+
+        private void LoadLastState()
+        {
+
+            loader = new PrimeLoader(primeDataFilePath, pendingValuesFilePath);
 
             BigInteger start;
             int range;
@@ -48,6 +77,8 @@ namespace PrimeServer
             generator.AddPendingValue(pendingValues);
 
             LaunchTimer();
+
+            //We could put here an event =(
         }
 
         #region Events & Handlers
@@ -115,11 +146,12 @@ namespace PrimeServer
 
         public void Launch()
         {
+            LoadLastState();
+
             var bytes = new byte[1024];
-            var ipHostInfo = Dns.GetHostEntry("localhost");
 
             //Validate IP address
-            var endPoint = new IPEndPoint(ipHostInfo.AddressList[1], 11000);
+            var endPoint = new IPEndPoint(ip, port);
 
             mainSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
 
@@ -149,6 +181,7 @@ namespace PrimeServer
                     mainSocket.Close();
 
                 loader.SavePendingValues(generator.GetPendingValues(), generator.StartValue, generator.Range);
+                loader.Close();
             }
             catch (Exception ex)
             {

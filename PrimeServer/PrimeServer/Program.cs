@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -38,6 +39,22 @@ namespace PrimeServer
                 WriteToSystemLog("Checking pending values...", MessageType.Warning);
 
             Server.Exception += (sender, e) => WriteToSystemLog(e.Message, MessageType.Exception);
+
+
+            try
+            {
+                var ip = ConfigurationManager.AppSettings["ServerIp"];
+                var port = Int32.Parse(ConfigurationManager.AppSettings["ServerPort"]);
+                var pendingPath = ConfigurationManager.AppSettings["PendingFilePath"];
+                var primePath = ConfigurationManager.AppSettings["PrimeDataFilePath"];
+
+                Server.Instance.Configurate(pendingPath,primePath, port, ip);
+            }
+            catch (Exception ex)
+            {
+
+                WriteToSystemLog(String.Format("Configuration data loading failed: {0}", ex.Message), MessageType.Exception);
+            }
 
             Server.Instance.Launch();
 

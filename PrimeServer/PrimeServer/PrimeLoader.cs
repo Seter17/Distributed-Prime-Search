@@ -13,14 +13,17 @@ namespace PrimeServer
 {
     public class PrimeLoader
     {
-        private string primeDataFilePath, pendingValuesFilePath;
+        private string pendingValuesFilePath;
         private TextWriter sw;
         private object lockObj = new object();
 
         public PrimeLoader(string primeDataFilePath, string pendingValuesFilePath)
         {
-            this.primeDataFilePath = primeDataFilePath;
+
             this.pendingValuesFilePath = pendingValuesFilePath;
+
+            if(sw != null)
+                sw.Close();
 
             sw = new StreamWriter(primeDataFilePath, true);
         }
@@ -83,6 +86,11 @@ namespace PrimeServer
             }
 
             return pendingValues;
+        }
+
+        public void Close()
+        {
+            sw.Close();
         }
     }
 }
