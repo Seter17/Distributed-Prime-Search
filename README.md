@@ -2,7 +2,7 @@ DistributedPrimeSearch
 ======================
 
 Client-Server app for distibutive searching prime numbers
-Launch server app, tham "how many you want" clients. Press ESC to stop server correctly, otherwise it could start
+Launch server app, then "how many you want" clients. Press ESC to stop server correctly, otherwise it could start
 search from old value.
 
 REQUIREMENTS:
